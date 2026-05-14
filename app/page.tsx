@@ -148,6 +148,17 @@ export default function AgroEyeApp() {
     date: "" // YYYY-MM-DD
   })
   const [historyFilter, setHistoryFilter] = useState<string | null>(null)
+  const [userRole, setUserRole] = useState<'admin' | 'operator'>('admin')
+  const [assets, setAssets] = useState([
+    { id: 'D-001', type: 'Dron', status: 'Activo', battery: 85, zone: 'Norte' },
+    { id: 'S-102', type: 'Sensor Suelo', status: 'Activo', battery: 92, zone: 'Sur' },
+    { id: 'P-001', type: 'Actuador Portón', status: 'Activo', battery: 100, zone: 'Este' },
+    { id: 'C-552', type: 'Collar Biométrico', status: 'Activo', battery: 45, zone: 'Norte' }
+  ])
+  const [systemUsers, setSystemUsers] = useState([
+    { id: 'U-1', name: 'Samira', role: 'admin', lastAccess: 'Ahora', actions: 24 },
+    { id: 'U-2', name: 'Operador-A', role: 'operator', lastAccess: 'Hace 2h', actions: 12 }
+  ])
   const droneMapRef = useRef<DroneMapRef>(null)
   const [envData, setEnvData] = useState<EnvData>({
     temperature: 35,
@@ -303,21 +314,32 @@ export default function AgroEyeApp() {
     setAlerts(prev => prev.map(alert => alert.id === alertId ? { ...alert, isNew: false, isAttended: true } : alert))
     
     if (resolution.toLowerCase().includes("riego")) {
-      setTimeout(() => {
-        setIsActionLoading(false)
-        toast.info("Comando enviado al Actuador de Riego")
-        setActiveSprinklers(prev => new Set(prev).add(record.sensorSource?.zone || "Norte"))
-      }, 1000)
-
-      let progress = 0
+      toast.success("Comando enviado al Actuador de Riego")
+      
+      // Simulación de aumento gradual de humedad
+      let currentProgress = 0
       const interval = setInterval(() => {
-        progress += 1
-        setEnvData(prev => ({ ...prev, humidity: Math.min(85, prev.humidity + 0.5) }))
-        if (progress >= 20) {
+        setEnvData(prev => ({ ...prev, humidity: Math.min(85, prev.humidity + 1) }))
+        currentProgress++
+        if (currentProgress >= 15) { // 30 segundos total (1% cada 2s aproximado en este loop)
           clearInterval(interval)
-          setActiveSprinklers(prev => { const n = new Set(prev); n.delete(record.sensorSource?.zone || "Norte"); return n; })
+          toast.info("Nivel de humedad óptimo alcanzado en Zona Norte")
         }
-      }, 1000)
+      }, 2000)
+
+      setAlerts(prev => [{
+        id: `sys-${Date.now()}`,
+        type: 'humidity',
+        severity: 'low',
+        title: 'Bucle de Riego Activo',
+        description: 'Ajustando niveles de humedad mediante actuador inteligente.',
+        timestamp: 'Ahora',
+        dateTime: new Date().toISOString().replace('T', ' ').split('.')[0],
+        isNew: false,
+        isAttended: true
+      }, ...prev])
+
+      setTimeout(() => setIsActionLoading(false), 1000)
 
     } else if (resolution.toLowerCase().includes("portón") || resolution.toLowerCase().includes("cerrar")) {
       const gateId = record.sensorSource?.zone || "Este"
@@ -388,7 +410,26 @@ export default function AgroEyeApp() {
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 bg-secondary/50 p-1 rounded-xl border border-border/50">
+                <button 
+                  onClick={() => setUserRole('admin')}
+                  className={cn(
+                    "px-3 py-1.5 text-[10px] font-bold rounded-lg transition-all",
+                    userRole === 'admin' ? "bg-white text-emerald-600 shadow-sm" : "text-muted-foreground"
+                  )}
+                >
+                  ADMIN
+                </button>
+                <button 
+                  onClick={() => setUserRole('operator')}
+                  className={cn(
+                    "px-3 py-1.5 text-[10px] font-bold rounded-lg transition-all",
+                    userRole === 'operator' ? "bg-white text-emerald-600 shadow-sm" : "text-muted-foreground"
+                  )}
+                >
+                  OPERADOR
+                </button>
+              </div>
               <Badge
                 variant="outline"
                 className="text-[10px] bg-emerald-100 text-emerald-600 border-emerald-200 hidden sm:flex"
@@ -407,7 +448,6 @@ export default function AgroEyeApp() {
               </button>
             </div>
           </div>
-        </div>
       </header>
 
       {/* Desktop Sidebar Navigation */}
@@ -533,7 +573,7 @@ export default function AgroEyeApp() {
 
             {/* Charts Row */}
             <div className="grid lg:grid-cols-2 gap-4">
-              <EnvironmentChart />
+              <EnvironmentChart currentTemp={envData.temperature} currentHumidity={envData.humidity} />
               <div className="grid gap-4">
                 <LivestockChart />
                 <SystemStatus />
@@ -988,7 +1028,142 @@ export default function AgroEyeApp() {
           />
         )}
 
-        {activeTab === "settings" && <SettingsView />}
+        {activeTab === "settings" && (
+          <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            {/* Cabecera de Configuración */}
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-3xl border border-border/50 shadow-sm">
+              <div>
+                <h2 className="text-2xl font-black text-foreground tracking-tight">Gestión de Activos</h2>
+                <p className="text-sm text-muted-foreground">Panel de administración de hardware y personal.</p>
+              </div>
+              {userRole === 'admin' && (
+                <button className="px-6 py-2.5 bg-emerald-600 text-white rounded-xl font-bold text-sm shadow-lg shadow-emerald-200 hover:bg-emerald-700 transition-all flex items-center gap-2">
+                  <Plus className="h-4 w-4" /> Registrar Nuevo Activo
+                </button>
+              )}
+            </div>
+
+            <div className="grid lg:grid-cols-3 gap-6">
+              {/* Columna Izquierda: Usuarios y Roles */}
+              <div className="lg:col-span-1 space-y-6">
+                <div className="bg-white p-6 rounded-3xl border border-border/50 shadow-sm">
+                  <div className="flex items-center gap-2 mb-6">
+                    <div className="p-2 bg-blue-50 rounded-lg">
+                      <Users className="h-4 w-4 text-blue-600" />
+                    </div>
+                    <h3 className="font-bold text-foreground">Personal Autorizado</h3>
+                  </div>
+                  <div className="space-y-4">
+                    {systemUsers.map(user => (
+                      <div key={user.id} className="flex items-center justify-between p-3 bg-secondary/20 rounded-2xl border border-border/10">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-xs uppercase">
+                            {user.name[0]}
+                          </div>
+                          <div>
+                            <p className="text-xs font-bold text-foreground">{user.name}</p>
+                            <p className="text-[10px] text-muted-foreground uppercase">{user.role}</p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-[9px] text-muted-foreground">Acciones: {user.actions}</p>
+                          <p className="text-[9px] font-mono text-emerald-600">{user.lastAccess}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Info Geofencing */}
+                <div className="bg-emerald-900 text-white p-6 rounded-3xl shadow-xl shadow-emerald-900/20 relative overflow-hidden">
+                  <div className="relative z-10">
+                    <h3 className="font-black text-lg mb-2">Geofencing Activo</h3>
+                    <p className="text-xs text-emerald-100/70 mb-4">4 zonas vinculadas a protocolos de drones automáticos.</p>
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-[10px] border-b border-white/10 pb-2">
+                        <span>ZONA NORTE</span>
+                        <span className="font-bold">2 SENSORES</span>
+                      </div>
+                      <div className="flex justify-between text-[10px] border-b border-white/10 pb-2">
+                        <span>ZONA ESTE</span>
+                        <span className="font-bold">1 ACTUADOR</span>
+                      </div>
+                    </div>
+                  </div>
+                  <Satellite className="absolute -right-4 -bottom-4 h-24 w-24 text-white/5 rotate-12" />
+                </div>
+              </div>
+
+              {/* Columna Derecha: Inventario de Dispositivos */}
+              <div className="lg:col-span-2">
+                <div className="bg-white rounded-3xl border border-border/50 shadow-sm overflow-hidden">
+                  <div className="p-6 border-b border-border/50 flex items-center justify-between">
+                    <h3 className="font-bold text-foreground">Inventario de Hardware IoT</h3>
+                    <Badge variant="outline" className="text-[10px]">{assets.length} Activos</Badge>
+                  </div>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left">
+                      <thead>
+                        <tr className="bg-secondary/20 text-[10px] uppercase tracking-widest text-muted-foreground">
+                          <th className="px-6 py-4 font-black">Dispositivo</th>
+                          <th className="px-6 py-4 font-black">Tipo</th>
+                          <th className="px-6 py-4 font-black">Estado</th>
+                          <th className="px-6 py-4 font-black">Batería</th>
+                          {userRole === 'admin' && <th className="px-6 py-4 font-black">Gestión</th>}
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-border/50">
+                        {assets.map(asset => (
+                          <tr key={asset.id} className="hover:bg-secondary/10 transition-colors">
+                            <td className="px-6 py-4">
+                              <span className="text-xs font-mono font-bold text-foreground">{asset.id}</span>
+                            </td>
+                            <td className="px-6 py-4">
+                              <span className="text-xs text-muted-foreground">{asset.type}</span>
+                            </td>
+                            <td className="px-6 py-4">
+                              <Badge className={cn(
+                                "text-[10px] px-2 py-0",
+                                asset.status === 'Activo' ? "bg-emerald-50 text-emerald-600" : "bg-rose-50 text-rose-600"
+                              )}>
+                                {asset.status}
+                              </Badge>
+                            </td>
+                            <td className="px-6 py-4">
+                              <div className="flex items-center gap-2">
+                                <div className="flex-1 h-1.5 w-12 bg-secondary rounded-full overflow-hidden">
+                                  <div 
+                                    className={cn("h-full transition-all", asset.battery > 50 ? "bg-emerald-500" : "bg-amber-500")}
+                                    style={{ width: `${asset.battery}%` }}
+                                  />
+                                </div>
+                                <span className="text-[10px] font-mono font-bold">{asset.battery}%</span>
+                              </div>
+                            </td>
+                            {userRole === 'admin' && (
+                              <td className="px-6 py-4">
+                                <button className="p-1.5 hover:bg-secondary rounded-md text-muted-foreground hover:text-rose-600 transition-colors">
+                                  <Settings className="h-4 w-4" />
+                                </button>
+                              </td>
+                            )}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                  {userRole === 'operator' && (
+                    <div className="p-8 text-center bg-secondary/5 border-t border-border/30">
+                      <Lock className="h-8 w-8 text-muted-foreground/30 mx-auto mb-2" />
+                      <p className="text-sm font-bold text-muted-foreground">Acceso restringido a solo lectura</p>
+                      <p className="text-xs text-muted-foreground/60">Contacta con un administrador para modificar activos.</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </main>
 
       {/* Drone Camera Feed Simulation Overlay */}

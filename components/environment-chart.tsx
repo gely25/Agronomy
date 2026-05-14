@@ -45,43 +45,30 @@ function generateInitialData(): DataPoint[] {
   return data
 }
 
-export function EnvironmentChart() {
+export function EnvironmentChart({ currentTemp, currentHumidity }: { currentTemp: number, currentHumidity: number }) {
   const [data, setData] = useState<DataPoint[]>([])
 
   useEffect(() => {
     setData(generateInitialData())
-
-    const interval = setInterval(() => {
-      setData((prev) => {
-        const newData = [...prev.slice(1)]
-        const now = new Date()
-        const hour = now.getHours()
-        const minute = now.getMinutes()
-
-        const lastTemp = prev[prev.length - 1]?.temperature || 30
-        const lastHumidity = prev[prev.length - 1]?.humidity || 50
-
-        const newTemp = Math.max(
-          15,
-          Math.min(45, lastTemp + (Math.random() - 0.5) * 3)
-        )
-        const newHumidity = Math.max(
-          15,
-          Math.min(85, lastHumidity + (Math.random() - 0.5) * 5)
-        )
-
-        newData.push({
-          time: `${hour.toString().padStart(2, "0")}:${minute.toString().padStart(2, "0")}`,
-          temperature: Math.round(newTemp),
-          humidity: Math.round(newHumidity),
-        })
-
-        return newData
-      })
-    }, 5000)
-
-    return () => clearInterval(interval)
   }, [])
+
+  useEffect(() => {
+    if (data.length === 0) return
+
+    const now = new Date()
+    const hour = now.getHours()
+    const minute = now.getMinutes()
+
+    setData((prev) => {
+      const newData = [...prev.slice(1)]
+      newData.push({
+        time: `${hour.toString().padStart(2, "0")}:${minute.toString().padStart(2, "0")}`,
+        temperature: Math.round(currentTemp),
+        humidity: Math.round(currentHumidity),
+      })
+      return newData
+    })
+  }, [currentTemp, currentHumidity])
 
   return (
     <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
