@@ -1,46 +1,78 @@
-# AgroEye Live AI - Industrial Smart Farming Platform 🚜🌾
+<div align="center">
 
-**AgroEye** es una plataforma de gestión agrícola de grado industrial diseñada para la monitorización en tiempo real, seguridad perimetral automatizada y auditoría ciberfísica de grandes extensiones de cultivo y ganado.
+# 🛰️ AgroEye Live AI
+### *Plataforma de Operaciones Agrícolas de Grado Industrial*
 
-![AgroEye Interface](https://images.unsplash.com/photo-1560493676-04071c5f467b?auto=format&fit=crop&q=80&w=1200)
-
-## 🚀 Capacidades Principales
-
-### 🛰️ Gestión Perimetral Activa
-- **Red de Actuadores**: Control remoto y sincronizado de múltiples portones perimetrales (Norte, Sur, Este, Oeste).
-- **Intervención Ciberfísica**: Cierre de portones y activación de sistemas de riego con verificación visual en tiempo real.
-
-### 🚁 Flota de Drones Autónoma (Relay System)
-- **Ciclo de Vida Automático**: Gestión de despegues, aterrizajes y rotación de unidades para cobertura 24/7.
-- **Modo Inspección Táctica**: Zoom digital de alta precisión (2.8x) y seguimiento automático de objetivos (Ganado/Actuadores).
-- **Navegación Manual**: Control dinámico por clic en mapa para reubicación rápida de unidades.
-
-### 📊 Auditoría e Inteligencia de Datos
-- **Registro de Auditoría Industrial**: Historial inalterable de eventos con marcas de tiempo exactas y estados de resolución.
-- **Análisis Predictivo IA**: Recomendaciones automáticas de mitigación basadas en telemetría de sensores.
-- **Telemetría en Vivo**: Monitorización constante de temperatura, humedad, riesgo de incendio y biometría de ganado.
-
-## 📁 Contenido del Proyecto
-
-```text
-├── app/                    # Rutas y páginas principales (Next.js)
-│   ├── layout.tsx          # Estructura global y temas
-│   └── page.tsx            # Dashboard principal y lógica de auditoría
-├── components/             # Componentes de la interfaz
-│   ├── drone-map.tsx       # Motor del mapa (Leaflet) y lógica de drones
-│   └── ui/                 # Componentes de diseño atómico (Radix/Shadcn)
-├── hooks/                  # Lógica de estado y utilidades React
-├── public/                 # Activos estáticos y multimedia
-└── INSTALL.md              # Manual técnico de instalación
-```
-
-## 🛠️ Stack Tecnológico
-
-- **Frontend**: React 18, Next.js (App Router), TypeScript.
-- **Styling**: Tailwind CSS para una interfaz premium y responsiva.
-- **Mapas**: Leaflet.js con capas satelitales híbridas.
-- **Iconografía**: Lucide React.
-- **Componentes**: Shadcn/UI optimizado para dashboards industriales.
+[![Next.js](https://img.shields.io/badge/Framework-Next.js%2014-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
+[![TypeScript](https://img.shields.io/badge/Language-TypeScript-blue?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
+[![Tailwind](https://img.shields.io/badge/Styling-Tailwind%20CSS-38B2AC?style=for-the-badge&logo=tailwind-css)](https://tailwindcss.com/)
 
 ---
-Desarrollado para el futuro de la agricultura inteligente. 📡🐄🔐
+
+<p align="center">
+  <b>Monitorización satelital, despliegue de drones y control de actuadores en tiempo real.</b><br>
+  AgroEye transforma la gestión rural en una operación ciberfísica de alta precisión.
+</p>
+
+![AgroEye Banner](https://images.unsplash.com/photo-1592982537447-7440770cbfc9?auto=format&fit=crop&q=80&w=1200)
+
+</div>
+
+## 🚀 Funcionalidades Principales
+
+### 🛸 Ecosistema de Drones Tácticos
+*   **Inspección 4K**: Zoom digital de 2.8x con enfoque automático en objetivos.
+*   **Navegación Táctica**: Reubicación de unidades mediante clics directos en el mapa.
+*   **Relay de Energía**: Sistema automático de rotación (Hangar -> Misión -> RTH) para cobertura ininterrumpida.
+
+### 🔒 Red de Seguridad Perimetral
+*   **Actuadores de Acceso**: Control remoto de portones Norte, Sur, Este y Oeste.
+*   **Verificación Visual**: Cámara de dron integrada para confirmar cierres físicos y seguridad.
+*   **Protocolos de Mitigación**: Activación de aspersores de riego preventivo ante riesgos de incendio.
+
+### 📋 Sistema de Auditoría Industrial
+*   **Trazabilidad Total**: Registro inalterable con fecha, hora, sensor fuente y estado de atención.
+*   **Centro de Filtrado**: Búsqueda avanzada por severidad, categoría y fecha.
+
+---
+
+## 🔔 Catálogo de Notificaciones y Alertas
+
+El sistema AgroEye utiliza IA para clasificar eventos en tiempo real. Aquí el detalle de cada protocolo:
+
+| Tipo de Alerta | Severidad | Origen del Sensor | Acción Recomendada |
+| :--- | :--- | :--- | :--- |
+| **🔥 Fuego / Humo** | 🔴 CRÍTICA | Sensor Térmico / Óptico | Desplegar Dron + Activar Riego Preventivo |
+| **🐮 Ganado Fuera** | 🟡 MEDIA | Biometría GPS | Inspección visual para verificar rotura de vallas |
+| **🔓 Portón Abierto** | 🔴 ALTA | Actuador Magnético | Comando de cierre remoto + Verificación con Dron |
+| **🌡️ Temp. Extrema** | 🟡 MEDIA | AGRO-NODE (Ambiente) | Activar protocolos de hidratación de ganado |
+| **🌱 Humedad Baja** | 🟢 BAJA | Sensor de Suelo | Programación de ciclo de riego en zona afectada |
+
+---
+
+## 🏗️ Arquitectura del Sistema
+
+```mermaid
+graph TD
+    A[Sensores de Campo / AGRO-NODE] -->|Telemetría| B(Servidor de IA AgroEye)
+    B -->|Detección de Anomalías| C{Gestión de Alertas}
+    C -->|Notificación| D[Dashboard Operador]
+    D -->|Comando Manual| E[Flota de Drones]
+    D -->|Comando Manual| F[Red de Portones]
+    E -->|Verificación Visual| D
+    F -->|Confirmación de Estado| D
+```
+
+---
+
+<div align="center">
+
+### 🛠️ Configuración Rápida
+
+1. `pnpm install`  
+2. `pnpm dev`  
+3. Accede a `localhost:3000`
+
+---
+© 2026 **AgroEye Team** | *Eficiencia. Seguridad. Innovación.*
+</div>
